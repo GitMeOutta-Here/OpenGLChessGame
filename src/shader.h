@@ -3,6 +3,8 @@
 
 
 #include <glad/glad.h>
+#include <glm/glm.hpp>
+#include <glm/gtc/type_ptr.hpp>
 
 #include <string>
 #include <fstream>
@@ -41,10 +43,13 @@ public:
             vertexCode = vShaderStream.str();
             fragmentCode = fShaderStream.str();
         }
-        catch (std::ifstream::failure& e)
+        catch (const std::exception& e)   // catch base std::exception, not just ifstream::failure
         {
-            std::cout << "ERROR::SHADER::FILE_NOT_SUCCESSFULLY_READ: " << e.what() << std::endl;
+            std::cout << "ERROR::SHADER::FILE_NOT_SUCCESSFULLY_READ: " << vertexPath
+                << " / " << fragmentPath << " -- " << e.what() << std::endl;
+            return; // or throw / exit, but don't fall through with empty strings
         }
+
         const char* vShaderCode = vertexCode.c_str();
         const char* fShaderCode = fragmentCode.c_str();
         // 2. compile shaders
@@ -90,6 +95,21 @@ public:
     void setFloat(const std::string& name, float value) const
     {
         glUniform1f(glGetUniformLocation(ID, name.c_str()), value);
+    }
+    // ------------------------------------------------------------------------
+    void setVec3(const std::string& name, const glm::vec3& value) const
+    {
+        glUniform3fv(glGetUniformLocation(ID, name.c_str()), 1, glm::value_ptr(value));
+    }
+    // ------------------------------------------------------------------------
+    void setVec3(const std::string& name, float x, float y, float z) const
+    {
+        glUniform3f(glGetUniformLocation(ID, name.c_str()), x, y, z);
+    }
+    // ------------------------------------------------------------------------
+    void setMat4(const std::string& name, const glm::mat4& mat) const
+    {
+        glUniformMatrix4fv(glGetUniformLocation(ID, name.c_str()), 1, GL_FALSE, glm::value_ptr(mat));
     }
 
 private:
