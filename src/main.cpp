@@ -17,7 +17,6 @@ const GLuint SCR_HEIGHT = 1080;
 
 const std::string startFEN = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR";
 const std::string revStart = "RNBQKBNR/PPPPPPPP/8/8/8/8/pppppppp/rnbqkbnr";
-const std::string susString = "4kb1r/p4ppp/4q3/8/8/1B6/PPP2PPP/2KR4";
 
 const GLint BOARD_SIZE = 8;
 
