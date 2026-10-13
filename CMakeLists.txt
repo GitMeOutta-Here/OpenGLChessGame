@@ -7,9 +7,15 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 add_executable(OpenGL
     "src/main.cpp"
     "Dependencies/glad/src/glad.c"
-    "x64/shader.h"
-    "Dependencies/stb/stb_image.cpp"  
- "src/ChessLogic.h")
+    "src/shader.h"
+    "Dependencies/stb/stb_image.cpp"
+    "src/ChessLogic.h"
+    "Dependencies/imGui/imgui-master/imgui.cpp"
+    "Dependencies/imGui/imgui-master/imgui_draw.cpp"
+    "Dependencies/imGui/imgui-master/imgui_tables.cpp"
+    "Dependencies/imGui/imgui-master/imgui_widgets.cpp"
+    "Dependencies/imGui/imgui-master/backends/imgui_impl_glfw.cpp"
+    "Dependencies/imGui/imgui-master/backends/imgui_impl_opengl3.cpp")
 
 # Dependencies/glad/glad.h        -> #include <glad/glad.h>
 # Dependencies/KHR/khrplatform.h  -> #include <KHR/khrplatform.h>
@@ -20,6 +26,8 @@ target_include_directories(OpenGL PRIVATE
     ${CMAKE_SOURCE_DIR}/Dependencies/glm
     ${CMAKE_SOURCE_DIR}/Dependencies/stb
     ${CMAKE_SOURCE_DIR}/src
+    ${CMAKE_SOURCE_DIR}/Dependencies/imGui/imgui-master
+    ${CMAKE_SOURCE_DIR}/Dependencies/imGui/imgui-master/backends
 )
 
 find_library(GLFW_LIB

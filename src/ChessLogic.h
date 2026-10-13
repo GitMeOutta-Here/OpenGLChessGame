@@ -20,14 +20,12 @@ enum class colors {
 char pieceToChar(pieces, colors);
 
 class Pieces {
-
-	struct Piece {
-		enum pieces currPiece;
-		enum colors currColor;
-	};
-
-
 public:
+	struct Piece {
+		pieces currPiece = pieces::NONE;
+		colors currColor = colors::NONE;
+		bool isEmpty() const { return currColor == colors::NONE; }
+	};
 
 	/* Board Layout by index */
 	// ===============================
@@ -40,9 +38,29 @@ public:
 	// 48  49  50  51  52  53  54  55
 	// 56  57  58  59  60  61  62  63
 	// ==============================
-
 	Piece piecePos[64];
 
+
+	colors sideToMove = colors::WHITE;
+
+	// -----------------------------------------------------------------------
+	// -----------------------------------------------------------------------
+	// Converts a column and row to an index in the piecePos array
+	static int index(int col, int row) { 
+		return row * 8 + col; 
+	}
+	// -----------------------------------------------------------------------
+	// -----------------------------------------------------------------------
+	// Returns a reference to the piece at the given column and row
+	Piece& at(int col, int row) { 
+		return piecePos[index(col, row)]; 
+	}
+	// -----------------------------------------------------------------------
+	// -----------------------------------------------------------------------
+	// Returns a const reference to the piece at the given column and row
+	const Piece& at(int col, int row) const { 
+		return piecePos[index(col, row)]; 
+	}
 	// -----------------------------------------------------------------------
 	// -----------------------------------------------------------------------
 	void changePos() {
@@ -50,6 +68,32 @@ public:
 	}
 	// -----------------------------------------------------------------------
 	// -----------------------------------------------------------------------
+	bool canPickUp(int col, int row) const {
+		const Piece& p = at(col, row);
+		return !p.isEmpty() && p.currColor == sideToMove;
+	}
+	// -----------------------------------------------------------------------
+	// -----------------------------------------------------------------------
+	bool isMoveAllowed(int fromCol, int fromRow, int toCol, int toRow) const {
+		if (fromCol == toCol && fromRow == toRow) return false;
+		const Piece& from = at(fromCol, fromRow);
+		const Piece& to = at(toCol, toRow);
+		if (from.isEmpty() || from.currColor != sideToMove) return false;
+		if (to.currColor == from.currColor) return false;
+		return true;   // TODO: per-piece movement, check, castling, en passant, promotion
+	}
+	// -----------------------------------------------------------------------
+	// -----------------------------------------------------------------------
+	bool movePiece(int fromCol, int fromRow, int toCol, int toRow) {
+		if (!isMoveAllowed(fromCol, fromRow, toCol, toRow)) return false;
+		at(toCol, toRow) = at(fromCol, fromRow);
+		at(fromCol, fromRow) = Piece{};
+		sideToMove = (sideToMove == colors::WHITE) ? colors::BLACK : colors::WHITE;
+		return true;
+	}
+	// -----------------------------------------------------------------------
+	// -----------------------------------------------------------------------
+
 	void FENdecoder(std::string FEN) {
 		int i = 0;
 
