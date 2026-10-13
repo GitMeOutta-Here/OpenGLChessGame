@@ -2,9 +2,9 @@
 
 A two-player chess board written in C++17 with modern OpenGL (4.4 core profile), GLFW, GLM, stb_image and Dear ImGui. You move pieces by dragging them with the mouse or by clicking, and a side panel shows whose turn it is and has a button that resets the board.
 
-The project builds on Windows (Visual Studio + CMake) and on Linux (Fedora 43 + CMake).
+The project builds on Windows (Visual Studio + CMake) from the `main` branch, and on Linux (Fedora 43 + CMake) from the `Linux` branch.
 
-![Starting position with the ImGui side panel](docs/screenshot.png)
+![Starting position with the ImGui side panel](Dependencies/docs/Screenshot.png)
 
 > **Status:** the board, the pieces, drag-and-drop and turn order work. The game does not check chess rules yet: a piece can move to any square that is empty or holds an enemy piece. Rules are the next milestone (see [Remaining tasks](#remaining-tasks)).
 
@@ -52,12 +52,9 @@ The project builds on Windows (Visual Studio + CMake) and on Linux (Fedora 43 + 
 
 ```
 OpenGL/
-├── CMakeLists.txt          Windows build (MSVC + prebuilt GLFW in Dependencies/GLFW)
-├── linux/
-│   └── CMakeLists.txt      Linux build (system GLFW + OpenGL packages)
+├── CMakeLists.txt          Windows build on main (MSVC + prebuilt GLFW in Dependencies/GLFW);
+│                           Linux build on the Linux branch (system GLFW + OpenGL packages)
 ├── README.md
-├── docs/
-│   └── screenshot.png
 ├── src/
 │   ├── main.cpp            Window, render loop, input callbacks, drawing, ImGui panel
 │   ├── ChessLogic.h        pieces/colors enums, Pieces board class, FEN decoder, move rules
@@ -70,6 +67,7 @@ OpenGL/
     ├── GLFW/               Headers + prebuilt Windows libraries (lib-vc2022 is used)
     ├── glm/                Header-only maths library
     ├── stb/                stb_image (PNG loading); stb_image.cpp holds the implementation
+    ├── docs/               Screenshot.png used at the top of this README
     └── imGui/imgui-master/ Dear ImGui 1.92.x, with the GLFW and OpenGL3 backends
 ```
 
@@ -94,14 +92,15 @@ The root `CMakeLists.txt` currently asks for CMake 4.0 or newer and links the Vi
 
 ## Building on Linux (Fedora 43)
 
-The Linux build uses `linux/CMakeLists.txt`, which links the system GLFW and OpenGL libraries instead of the Windows `.lib` files. Everything else (GLAD, GLM, stb_image, ImGui) is compiled from `Dependencies/`, the same as on Windows.
+The Linux build lives on the `Linux` branch. That branch is `main` plus a Linux-specific root `CMakeLists.txt`, which links the system GLFW and OpenGL libraries instead of the Windows `.lib` files. Everything else (GLAD, GLM, stb_image, ImGui) is compiled from `Dependencies/`, the same as on Windows.
 
 ```bash
 # one-time setup
 sudo dnf install cmake gcc-c++ glfw-devel mesa-libGL-devel
 
-# configure and build, from the project root
-cmake -S linux -B build-linux -DCMAKE_BUILD_TYPE=Debug
+# switch to the Linux branch, then configure and build from the project root
+git checkout Linux
+cmake -S . -B build-linux -DCMAKE_BUILD_TYPE=Debug
 cmake --build build-linux -j
 
 # run from the build folder (assets are loaded with relative paths)
@@ -233,8 +232,9 @@ The tasks are listed roughly in build order. The move-legality tasks all go into
 
 Small clean-ups, none of which block the tasks above:
 
-- [ ] Delete the stale `x64/shader.h` copy (the build uses `src/shader.h`).
+- [ ] Stop tracking the Visual Studio build output in `x64/Debug/` (`OpenGL.exe`, `OpenGL.pdb`).
+- [ ] Change the shaders from `#version 460 core` to `#version 440 core` to match the OpenGL 4.4 context; drivers that stop at OpenGL 4.5 (common on Linux in virtual machines and on older GPUs) reject 4.60 shaders.
 - [ ] Remove or use the leftover `susString` and the declared-but-never-defined `pieceToChar()` in `ChessLogic.h`.
 - [ ] Add `build-linux/` and `x64/` to `.gitignore`.
-- [ ] Consider merging both CMake files into one with `if(WIN32) … else() … endif()` once the Linux build is confirmed on Fedora.
+- [ ] Consider merging the Windows and Linux `CMakeLists.txt` into one file with `if(WIN32) … else() … endif()` once the Linux build is confirmed on Fedora, so the `Linux` branch is no longer needed.
 - [ ] Load assets relative to the executable's folder instead of the working directory, so the game can be launched from anywhere.
