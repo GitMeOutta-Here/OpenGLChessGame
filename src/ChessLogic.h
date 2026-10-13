@@ -46,25 +46,20 @@ public:
 	// -----------------------------------------------------------------------
 	// -----------------------------------------------------------------------
 	// Converts a column and row to an index in the piecePos array
-	static int index(int col, int row) { 
-		return row * 8 + col; 
+	static int index(int col, int row) {
+		return row * 8 + col;
 	}
 	// -----------------------------------------------------------------------
 	// -----------------------------------------------------------------------
 	// Returns a reference to the piece at the given column and row
-	Piece& at(int col, int row) { 
-		return piecePos[index(col, row)]; 
+	Piece& at(int col, int row) {
+		return piecePos[index(col, row)];
 	}
 	// -----------------------------------------------------------------------
 	// -----------------------------------------------------------------------
 	// Returns a const reference to the piece at the given column and row
-	const Piece& at(int col, int row) const { 
-		return piecePos[index(col, row)]; 
-	}
-	// -----------------------------------------------------------------------
-	// -----------------------------------------------------------------------
-	void changePos() {
-
+	const Piece& at(int col, int row) const {
+		return piecePos[index(col, row)];
 	}
 	// -----------------------------------------------------------------------
 	// -----------------------------------------------------------------------
@@ -80,9 +75,118 @@ public:
 		const Piece& to = at(toCol, toRow);
 		if (from.isEmpty() || from.currColor != sideToMove) return false;
 		if (to.currColor == from.currColor) return false;
+		switch (from.currPiece) {
+			case pieces::ROOK:
+				return rookMoveCheck(fromCol, fromRow, toCol, toRow);
+			case pieces::KNIGHT:
+				return knightMoveCheck(fromCol, fromRow, toCol, toRow);
+			case pieces::BISHOP:
+				return bishopMoveCheck(fromCol, fromRow, toCol, toRow);
+			case pieces::KING:
+				return kingMoveCheck(fromCol, fromRow, toCol, toRow);
+			case pieces::QUEEN:
+				return queenMoveCheck(fromCol, fromRow, toCol, toRow);
+			case pieces::PAWN:
+				return pawnMoveCheck(fromCol, fromRow, toCol, toRow);
+			default:
+				return false;
+		}
 		return true;   // TODO: per-piece movement, check, castling, en passant, promotion
 	}
 	// -----------------------------------------------------------------------
+	// -----------------------------------------------------------------------
+	bool knightMoveCheck(int fromCol, int fromRow, int toCol, int toRow) const {
+		int colDiff = std::abs(toCol - fromCol);
+		int rowDiff = std::abs(toRow - fromRow);
+		return (colDiff == 2 && rowDiff == 1) || (colDiff == 1 && rowDiff == 2);
+	}
+	// -----------------------------------------------------------------------
+	// -----------------------------------------------------------------------
+	bool rookMoveCheck(int fromCol, int fromRow, int toCol, int toRow) const {
+		if (fromCol != toCol && fromRow != toRow) return false;  // not straight
+		int colStep = (toCol > fromCol) ? 1 : (toCol < fromCol) ? -1 : 0;
+		int rowStep = (toRow > fromRow) ? 1 : (toRow < fromRow) ? -1 : 0;
+		int col = fromCol + colStep;
+		int row = fromRow + rowStep;
+		while (col != toCol || row != toRow) {
+			if (!at(col, row).isEmpty()) return false;   // blocked
+			col += colStep;
+			row += rowStep;
+		}
+		return true;
+	}
+	// -----------------------------------------------------------------------
+	// -----------------------------------------------------------------------
+	bool bishopMoveCheck(int fromCol, int fromRow, int toCol, int toRow) const {
+		if (!(std::abs(toCol - fromCol) == std::abs(toRow - fromRow))) return false;
+		int colStep = (toCol > fromCol) ? 1 : (toCol < fromCol) ? -1 : 0;
+		int rowStep = (toRow > fromRow) ? 1 : (toRow < fromRow) ? -1 : 0;
+		int col = fromCol + colStep;
+		int row = fromRow + rowStep;
+
+		while (col != toCol && row != toRow) {
+			if (!at(col, row).isEmpty()) return false;   // blocked
+			col += colStep;
+			row += rowStep;
+		}
+		return true;
+	}
+	// -----------------------------------------------------------------------
+	// -----------------------------------------------------------------------
+	bool kingMoveCheck(int fromCol, int fromRow, int toCol, int toRow) const {
+		int colDiff = std::abs(fromCol - toCol);
+		int rowDiff = std::abs(fromRow - toRow);
+		return ((rowDiff == 1 || rowDiff == 0) && (colDiff == 1 || colDiff == 0)) ? true : false;
+	}
+	// -----------------------------------------------------------------------
+	// -----------------------------------------------------------------------
+	bool pawnMoveCheck(int fromCol, int fromRow, int toCol, int toRow) const {
+		if (std::abs(fromCol - toCol) > 1 || std::abs(fromRow - toRow) > 2) return false;
+		// Logic for first move
+		if ((sideToMove == colors::WHITE)) {
+			if (toCol == fromCol && fromRow == 1) {
+				int temp = toRow - fromRow;
+				if (temp != 1 && temp != 2) return false;
+				for (int row = fromRow + 1; row < toRow; row++){
+					if (!at(toCol, row).isEmpty()) return false;   // blocked
+				}
+				return true;
+			}
+			else if (toCol == fromCol) {
+				return (toRow - fromRow == 1 && at(toCol, toRow).isEmpty()) ? true : false;
+			}
+			else if (std::abs(toCol - fromCol) == 1 && (toRow - fromRow == 1)) {
+				if (!at(toCol, toRow).isEmpty()) return true;
+				return false;
+			}
+			return false;
+		}
+		else if ((sideToMove == colors::BLACK)) {
+			if (toCol == fromCol && fromRow == 6) {
+				int temp = toRow - fromRow;
+				if (temp != -1 && temp != -2) return false;
+				for (int row = fromRow - 1; row > toRow; row--) {
+					if (!at(toCol, row).isEmpty()) return false;   // blocked
+				}
+				return true;
+			}
+			else if (toCol == fromCol) {
+				return (toRow - fromRow == -1 && at(toCol, toRow).isEmpty()) ? true : false;
+			}
+			else if (std::abs(toCol - fromCol) == 1 && (toRow - fromRow == -1)) {
+				if (!at(toCol, toRow).isEmpty()) return true;
+				return false;
+			}
+			return false;
+		}
+		return false;
+	}
+	// -----------------------------------------------------------------------
+	// -----------------------------------------------------------------------
+	bool queenMoveCheck(int fromCol, int fromRow, int toCol, int toRow) const {
+		return (rookMoveCheck(fromCol, fromRow, toCol, toRow) || bishopMoveCheck(fromCol, fromRow, toCol, toRow)) ? true : false;
+	}
+  	// -----------------------------------------------------------------------
 	// -----------------------------------------------------------------------
 	bool movePiece(int fromCol, int fromRow, int toCol, int toRow) {
 		if (!isMoveAllowed(fromCol, fromRow, toCol, toRow)) return false;

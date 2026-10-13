@@ -15,8 +15,8 @@
 const GLuint SCR_WIDTH = 1920;
 const GLuint SCR_HEIGHT = 1080;
 
-const std::string startFEN = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR";
-const std::string revStart = "RNBQKBNR/PPPPPPPP/8/8/8/8/pppppppp/rnbqkbnr";
+const std::string revStart = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR";
+const std::string startFEN = "RNBQKBNR/PPPPPPPP/8/8/8/8/pppppppp/rnbqkbnr";
 
 const GLint BOARD_SIZE = 8;
 
@@ -93,7 +93,7 @@ int main() {
 	glfwSetFramebufferSizeCallback(window, framebuffer_size_callback);
 
 	GameState game;
-	game.board.FENdecoder(revStart);   // row 0 is drawn at the bottom, so white goes first in the string
+	game.board.FENdecoder(startFEN);   // row 0 is drawn at the bottom, so white goes first in the string
 	glfwSetWindowUserPointer(window, &game);   // lets callbacks reach the game without globals
 	glfwSetMouseButtonCallback(window, mouse_button_callback);
 	glfwSetCursorPosCallback(window, cursor_pos_callback);
@@ -477,7 +477,7 @@ GLvoid cursor_pos_callback(GLFWwindow* window, double x, double y) {
 // Resets the game state to a fresh board, white to move, no selection, no drag
 GLvoid resetGame(GameState& gs) {
 	gs = GameState{};                 // fresh board, white to move, no selection, no drag
-	gs.board.FENdecoder(revStart);
+	gs.board.FENdecoder(startFEN);
 }
 // ---------------------------------------------------------------------------------------------------------
 // ImGui panel placed just to the right of the board
