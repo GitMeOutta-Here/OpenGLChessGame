@@ -68,8 +68,7 @@ OpenGL/
     ├── GLFW/               Headers + prebuilt Windows libraries (lib-vc2022 is used)
     ├── glm/                Header-only maths library
     ├── stb/                stb_image (PNG loading); stb_image.cpp holds the implementation
-    ├── docs/               Screenshot.png used at the top of this README
-    └── imGui/imgui-master/ Dear ImGui 1.92.x, with the GLFW and OpenGL3 backends
+    └── docs/               Screenshot.png used at the top of this README
 ```
 
 ## Dependencies
@@ -81,7 +80,6 @@ OpenGL/
 | GLAD | Loads OpenGL function pointers | Bundled source | Bundled source |
 | GLM | Matrices and vectors (`ortho`, `translate`, `inverse`) | Bundled headers | Bundled headers |
 | stb_image | Loads the piece PNGs | Bundled header | Bundled header |
-| Dear ImGui | Side panel UI | Bundled source | Bundled source |
 
 ## Building on Windows (Visual Studio)
 
