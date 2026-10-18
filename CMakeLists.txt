@@ -31,8 +31,6 @@ endif()
 # This file lives in the project root.
 set(PROJECT_ROOT "${CMAKE_CURRENT_SOURCE_DIR}")
 set(DEPS      "${PROJECT_ROOT}/Dependencies")
-set(IMGUI_DIR "${DEPS}/imGui/imgui-master")
-
 # ---- System packages ------------------------------------------------------------------------
 set(OpenGL_GL_PREFERENCE GLVND)
 find_package(OpenGL REQUIRED)                  # mesa-libGL-devel (or your GPU vendor's driver)
@@ -68,12 +66,6 @@ if(CMAKE_CXX_COMPILER_ID MATCHES "GNU|Clang")
     set_source_files_properties(
         "${DEPS}/glad/src/glad.c"
         "${DEPS}/stb/stb_image.cpp"
-        "${IMGUI_DIR}/imgui.cpp"
-        "${IMGUI_DIR}/imgui_draw.cpp"
-        "${IMGUI_DIR}/imgui_tables.cpp"
-        "${IMGUI_DIR}/imgui_widgets.cpp"
-        "${IMGUI_DIR}/backends/imgui_impl_glfw.cpp"
-        "${IMGUI_DIR}/backends/imgui_impl_opengl3.cpp"
         PROPERTIES COMPILE_OPTIONS "-w")
 endif()
 
