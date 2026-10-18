@@ -11,6 +11,19 @@ add_executable(OpenGLChessGame
     "Dependencies/stb/stb_image.cpp"
     "src/ChessLogic.h" "src/testing.cpp" )
 
+if(MSVC)
+    target_link_options(OpenGLChessGame PRIVATE
+        $<$<NOT:$<CONFIG:Debug>>:/SUBSYSTEM:WINDOWS /ENTRY:mainCRTStartup>
+    )
+
+    # Non-Debug builds link the Microsoft C/C++ runtime statically (/MT), so the .exe does not
+    # need VCRUNTIME140.dll / MSVCP140.dll and runs on PCs without the VC++ Redistributable.
+    # Debug builds keep the normal DLL runtime (/MDd) for faster linking and debugging.
+    set_property(TARGET OpenGLChessGame PROPERTY
+        MSVC_RUNTIME_LIBRARY "$<IF:$<CONFIG:Debug>,MultiThreadedDebugDLL,MultiThreaded>"
+    )
+endif()
+
 # Dependencies/glad/glad.h        -> #include <glad/glad.h>
 # Dependencies/KHR/khrplatform.h  -> #include <KHR/khrplatform.h>
 # Dependencies/GLFW/include/...   -> #include <GLFW/glfw3.h>
@@ -22,18 +35,20 @@ target_include_directories(OpenGLChessGame PRIVATE
     ${CMAKE_SOURCE_DIR}/src
 )
 
-find_library(GLFW_LIB
-    NAMES glfw3
-    PATHS ${CMAKE_SOURCE_DIR}/Dependencies/GLFW/lib-vc2022
-    NO_DEFAULT_PATH
-)
+# GLFW has to be built with the same runtime as the program:
+#   Debug     -> lib-vc2022/glfw3.lib     (built with the DLL runtime, /MD)
+#   otherwise -> lib-vc2019/glfw3_mt.lib  (built with the static runtime, /MT; works with VS 2022)
+set(GLFW_LIB    "${CMAKE_SOURCE_DIR}/Dependencies/GLFW/lib-vc2022/glfw3.lib")
+set(GLFW_LIB_MT "${CMAKE_SOURCE_DIR}/Dependencies/GLFW/lib-vc2019/glfw3_mt.lib")
 
-if(NOT GLFW_LIB)
-    message(FATAL_ERROR "glfw3.lib not found under Dependencies/GLFW/lib-vc2022 — check the path")
-endif()
+foreach(lib IN ITEMS "${GLFW_LIB}" "${GLFW_LIB_MT}")
+    if(NOT EXISTS "${lib}")
+        message(FATAL_ERROR "${lib} not found — check the Dependencies/GLFW folder")
+    endif()
+endforeach()
 
 target_link_libraries(OpenGLChessGame PRIVATE
-    ${GLFW_LIB}
+    $<IF:$<CONFIG:Debug>,${GLFW_LIB},${GLFW_LIB_MT}>
     opengl32
 )
 
