@@ -30,8 +30,6 @@ endif()
 # This file lives in the project root.
 set(PROJECT_ROOT "${CMAKE_CURRENT_SOURCE_DIR}")
 set(DEPS      "${PROJECT_ROOT}/Dependencies")
-set(IMGUI_DIR "${DEPS}/imGui/imgui-master")
-
 # ---- System packages ------------------------------------------------------------------------
 set(OpenGL_GL_PREFERENCE GLVND)
 find_package(OpenGL REQUIRED)                  # mesa-libGL-devel (or your GPU vendor's driver)
@@ -75,12 +73,6 @@ if(CMAKE_CXX_COMPILER_ID MATCHES "GNU|Clang")
     set_source_files_properties(
         "${DEPS}/glad/src/glad.c"
         "${DEPS}/stb/stb_image.cpp"
-        "${IMGUI_DIR}/imgui.cpp"
-        "${IMGUI_DIR}/imgui_draw.cpp"
-        "${IMGUI_DIR}/imgui_tables.cpp"
-        "${IMGUI_DIR}/imgui_widgets.cpp"
-        "${IMGUI_DIR}/backends/imgui_impl_glfw.cpp"
-        "${IMGUI_DIR}/backends/imgui_impl_opengl3.cpp"
         PROPERTIES COMPILE_OPTIONS "-w")
 endif()
 
@@ -94,3 +86,98 @@ add_custom_target(copy_assets ALL
     COMMENT "Copying shaders and piece images next to the executable"
 )
 add_dependencies(OpenGL copy_assets)
+
+add_custom_command(TARGET OpenGL POST_BUILD
+    COMMAND ${CMAKE_COMMAND} -E copy_directory
+        ${CMAKE_SOURCE_DIR}/src/boardShaders
+        $<TARGET_FILE_DIR:OpenGL>/boardShaders
+)
+
+add_custom_command(TARGET OpenGL POST_BUILD
+    COMMAND ${CMAKE_COMMAND} -E copy_directory
+        ${CMAKE_SOURCE_DIR}/src/pieceShaders
+        $<TARGET_FILE_DIR:OpenGL>/pieceShaders
+)
+
+add_custom_command(TARGET OpenGL POST_BUILD
+    COMMAND ${CMAKE_COMMAND} -E copy_directory
+        ${CMAKE_SOURCE_DIR}/src/ChessPieces
+        $<TARGET_FILE_DIR:OpenGL>/ChessPieces
+)
+
+add_custom_command(TARGET OpenGL POST_BUILD
+    COMMAND ${CMAKE_COMMAND} -E copy_directory
+        ${CMAKE_SOURCE_DIR}/src/Icons
+        $<TARGET_FILE_DIR:OpenGL>/Icons
+)
+
+set_target_properties(OpenGL PROPERTIES
+    VS_DEBUGGER_WORKING_DIRECTORY $<TARGET_FILE_DIR:OpenGL>
+=======
+cmake_minimum_required(VERSION 4.0)
+project(OpenGL LANGUAGES C CXX)
+
+set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
+
+add_executable(OpenGL
+    "src/main.cpp"
+    "Dependencies/glad/src/glad.c"
+    "src/shader.h"
+    "Dependencies/stb/stb_image.cpp"
+    "src/ChessLogic.h" "src/testing.cpp" )
+
+# Dependencies/glad/glad.h        -> #include <glad/glad.h>
+# Dependencies/KHR/khrplatform.h  -> #include <KHR/khrplatform.h>
+# Dependencies/GLFW/include/...   -> #include <GLFW/glfw3.h>
+target_include_directories(OpenGL PRIVATE
+    ${CMAKE_SOURCE_DIR}/Dependencies
+    ${CMAKE_SOURCE_DIR}/Dependencies/GLFW/include
+    ${CMAKE_SOURCE_DIR}/Dependencies/glm
+    ${CMAKE_SOURCE_DIR}/Dependencies/stb
+    ${CMAKE_SOURCE_DIR}/src
+)
+
+find_library(GLFW_LIB
+    NAMES glfw3
+    PATHS ${CMAKE_SOURCE_DIR}/Dependencies/GLFW/lib-vc2022
+    NO_DEFAULT_PATH
+)
+
+if(NOT GLFW_LIB)
+    message(FATAL_ERROR "glfw3.lib not found under Dependencies/GLFW/lib-vc2022 — check the path")
+endif()
+
+target_link_libraries(OpenGL PRIVATE
+    ${GLFW_LIB}
+    opengl32
+)
+
+add_custom_command(TARGET OpenGL POST_BUILD
+    COMMAND ${CMAKE_COMMAND} -E copy_directory
+        ${CMAKE_SOURCE_DIR}/src/boardShaders
+        $<TARGET_FILE_DIR:OpenGL>/boardShaders
+)
+
+add_custom_command(TARGET OpenGL POST_BUILD
+    COMMAND ${CMAKE_COMMAND} -E copy_directory
+        ${CMAKE_SOURCE_DIR}/src/pieceShaders
+        $<TARGET_FILE_DIR:OpenGL>/pieceShaders
+)
+
+add_custom_command(TARGET OpenGL POST_BUILD
+    COMMAND ${CMAKE_COMMAND} -E copy_directory
+        ${CMAKE_SOURCE_DIR}/src/ChessPieces
+        $<TARGET_FILE_DIR:OpenGL>/ChessPieces
+)
+
+add_custom_command(TARGET OpenGL POST_BUILD
+    COMMAND ${CMAKE_COMMAND} -E copy_directory
+        ${CMAKE_SOURCE_DIR}/src/Icons
+        $<TARGET_FILE_DIR:OpenGL>/Icons
+)
+
+set_target_properties(OpenGL PROPERTIES
+    VS_DEBUGGER_WORKING_DIRECTORY $<TARGET_FILE_DIR:OpenGL>
+>>>>>>> Stashed changes
+)
