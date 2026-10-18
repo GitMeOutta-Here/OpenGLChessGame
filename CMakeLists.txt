@@ -39,28 +39,20 @@ find_package(glfw3 3.3 REQUIRED)               # glfw-devel, provides the 'glfw'
 
 # ---- Executable -----------------------------------------------------------------------------
 add_executable(OpenGL
-    "${PROJECT_ROOT}/src/main.cpp"
-    "${PROJECT_ROOT}/src/shader.h"
-    "${PROJECT_ROOT}/src/ChessLogic.h"
-    "${DEPS}/glad/src/glad.c"
-    "${DEPS}/stb/stb_image.cpp"
-    "${IMGUI_DIR}/imgui.cpp"
-    "${IMGUI_DIR}/imgui_draw.cpp"
-    "${IMGUI_DIR}/imgui_tables.cpp"
-    "${IMGUI_DIR}/imgui_widgets.cpp"
-    "${IMGUI_DIR}/backends/imgui_impl_glfw.cpp"
-    "${IMGUI_DIR}/backends/imgui_impl_opengl3.cpp"
-)
+    "src/main.cpp"
+    "Dependencies/glad/src/glad.c"
+    "src/shader.h"
+    "Dependencies/stb/stb_image.cpp"
+    "src/ChessLogic.h" "src/testing.cpp" )
 
 # Note: Dependencies/GLFW/include is deliberately NOT added here, so <GLFW/glfw3.h> comes
 # from the system package and always matches the GLFW library we link against.
 target_include_directories(OpenGL PRIVATE
-    "${DEPS}"                  # <glad/glad.h>, <KHR/khrplatform.h>
-    "${DEPS}/glm"              # <glm/glm.hpp>
-    "${DEPS}/stb"              # "stb_image.h"
-    "${PROJECT_ROOT}/src"
-    "${IMGUI_DIR}"
-    "${IMGUI_DIR}/backends"
+    ${CMAKE_SOURCE_DIR}/Dependencies
+    ${CMAKE_SOURCE_DIR}/Dependencies/GLFW/include
+    ${CMAKE_SOURCE_DIR}/Dependencies/glm
+    ${CMAKE_SOURCE_DIR}/Dependencies/stb
+    ${CMAKE_SOURCE_DIR}/src
 )
 
 target_link_libraries(OpenGL PRIVATE
@@ -94,3 +86,31 @@ add_custom_target(copy_assets ALL
     COMMENT "Copying shaders and piece images next to the executable"
 )
 add_dependencies(OpenGL copy_assets)
+
+add_custom_command(TARGET OpenGL POST_BUILD
+    COMMAND ${CMAKE_COMMAND} -E copy_directory
+        ${CMAKE_SOURCE_DIR}/src/boardShaders
+        $<TARGET_FILE_DIR:OpenGL>/boardShaders
+)
+
+add_custom_command(TARGET OpenGL POST_BUILD
+    COMMAND ${CMAKE_COMMAND} -E copy_directory
+        ${CMAKE_SOURCE_DIR}/src/pieceShaders
+        $<TARGET_FILE_DIR:OpenGL>/pieceShaders
+)
+
+add_custom_command(TARGET OpenGL POST_BUILD
+    COMMAND ${CMAKE_COMMAND} -E copy_directory
+        ${CMAKE_SOURCE_DIR}/src/ChessPieces
+        $<TARGET_FILE_DIR:OpenGL>/ChessPieces
+)
+
+add_custom_command(TARGET OpenGL POST_BUILD
+    COMMAND ${CMAKE_COMMAND} -E copy_directory
+        ${CMAKE_SOURCE_DIR}/src/Icons
+        $<TARGET_FILE_DIR:OpenGL>/Icons
+)
+
+set_target_properties(OpenGL PROPERTIES
+    VS_DEBUGGER_WORKING_DIRECTORY $<TARGET_FILE_DIR:OpenGL>
+)
